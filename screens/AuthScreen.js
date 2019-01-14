@@ -16,12 +16,13 @@ import bannerLoginPNG from './../assets/images/bannerLogin.png'
 import Colors from './../constants/Colors';
 import { Card, CardSection, Input, Button, Spinner } from '../components/common';
 import * as actions from './../containers/OSAC/OsacActions';
+import SignUp from '../components/SignUpComponent';
 
 class AuthScreen extends React.Component {
   state = {
     imageWidth: 0,
     imageHeight: 0,
-    modalVisible: false,
+    isDangKy: false,
   }
 
   componentDidMount() {
@@ -37,8 +38,8 @@ class AuthScreen extends React.Component {
 
   render() {
     const { containerStyle, logoNameStyle, osacColor } = styles;
-    const { imageHeight, imageWidth } = this.state;
-    const { userToken, email, password, isLoadingComplete } = this.props;
+    const { imageHeight, imageWidth, isDangKy } = this.state;
+    const { userToken, username, password, isLoadingComplete } = this.props;
     const { onChangeValue } = this.props;
 
     if (isLoadingComplete) {
@@ -46,24 +47,13 @@ class AuthScreen extends React.Component {
         <Spinner />)
     }
     return [
-      <Modal animationType='slide' visible={this.state.modalVisible} key="modalDangKy"
-        onRequestClose={() => { Alert.alert('Modal has been closed.'); }}
-      >
-        <Card style={{flex: 1, height: 300}}>
-          <CardSection>
-            <Input
-              placeholder={'password'}
-              label={'PASSWORD'}
-              onChangeText={(value) => onChangeValue('password', value)}
-              secureTextEntry
-              value={password}
-            />
-          </CardSection>
-          <CardSection>
-            <Button onPress={() => { this.setModalVisible(!this.state.modalVisible); }}>Đăng Ký</Button>
-          </CardSection>
-        </Card>
-      </Modal>,
+      <SignUp
+        key="modalDangKy"
+        dangKyHandle={this.dangKyHandle}
+        isDangKy={isDangKy}
+        {...this.props}
+      />
+      ,
       < ScrollView style={containerStyle} key="dangky">
         <View style={styles.headerStyle}>
           <Image
@@ -74,10 +64,10 @@ class AuthScreen extends React.Component {
         <Card>
           <CardSection>
             <Input
-              placeholder={'example@gmail.com'}
-              label={'EMAIL'}
-              onChangeText={(value) => onChangeValue('email', value)}
-              value={email}
+              placeholder={'username'}
+              label={'USERNAME'}
+              onChangeText={(value) => onChangeValue('username', value)}
+              value={username}
             />
           </CardSection>
           <CardSection style={{ marginTop: 10 }}>
@@ -90,14 +80,15 @@ class AuthScreen extends React.Component {
             />
           </CardSection>
         </Card>
+
+        <View style={{marginTop: 10}}>
+          <Button onPress={this._signInAsync}>ĐĂNG NHẬP</Button>
+        </View>
+
         <Card>
-          <CardSection>
-            <Button onPress={this._signInAsync}>ĐĂNG NHẬP</Button>
-          </CardSection>
           <CardSection style={{ alignSelf: 'center', paddingBottom: 3 }}>
             <Text>Bạn có tài khoản chưa? </Text>
-            <TouchableOpacity>
-            {/* <TouchableOpacity onPress={() => this.setModalVisible(true)}> */}
+            <TouchableOpacity onPress={() => this.dangKyHandle(true)}>
               <View><Text style={styles.signUpStyle}>Đăng Ký</Text></View>
             </TouchableOpacity>
           </CardSection>
@@ -108,30 +99,31 @@ class AuthScreen extends React.Component {
             <Text style={styles.lineStyle}></Text>
           </CardSection>
           <CardSection>
-            <Button
+            {/* <Button
               style={styles.facebookStyle}
               icon={facebookIcon}
             >Facebook</Button>
             <Button
               style={styles.googleStyle}
               icon={googleIcon}
-            >Google</Button>
+            >Google</Button> */}
           </CardSection>
         </Card>
       </ScrollView >
     ]
   }
 
-  setModalVisible = (modalVisible) => {
-    this.setState({ modalVisible })
+  dangKyHandle = (value) => {
+    this.setState({
+      isDangKy: value
+    })
   }
 
   _signInAsync = async () => {
-    const { email, password, navigation } = this.props;
+    const { username, password, navigation } = this.props;
     const { loginUser, setIsLoadingComplete } = this.props;
-    loginUser({ email, password, navigation });
     setIsLoadingComplete();
-    // await AsyncStorage.setItem('userToken', 'abc');
+    loginUser({ username, password, navigation });
   }
 }
 
@@ -185,8 +177,8 @@ const styles = {
 }
 
 const mapStateToProps = state => {
-  const { userToken, email, password, isLoadingComplete } = state.osac;
-  return { userToken, email, password, isLoadingComplete }
+  const { userToken, username, password, isLoadingComplete } = state.osac;
+  return { userToken, username, password, isLoadingComplete }
 }
 
 export default connect(mapStateToProps, actions)(AuthScreen)

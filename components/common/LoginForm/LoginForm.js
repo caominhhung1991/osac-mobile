@@ -93,8 +93,8 @@ class LoginForm extends Component {
       return <Spinner size={"small"} />;
     }
     return (<CardSection>
-      <Button onPress={this.onButtonPress}>Log in</Button>
-      <Button onPress={this.onLogOut}>Log Out</Button>
+      {/* <Button onPress={this.onButtonPress}>Log in</Button>
+      <Button onPress={this.onLogOut}>Log Out</Button> */}
     </CardSection>);
   }
 }

@@ -37,7 +37,7 @@ HomeStack.navigationOptions = {
 const DanhGiaStack = createStackNavigator({
   DanhGia: DanhGiaScreen,
 }, {
-    defaultNavigationOptions: { ...defaultNavOpts, ...defaultNavOpts.title = 'Đánh Giá' },
+    defaultNavigationOptions: { ...defaultNavOpts, ...defaultNavOpts.title = 'Phiếu Đánh Giá Căn Tin' },
     headerLayoutPreset: 'center',
   }
 );

@@ -3,6 +3,7 @@ import { View, Platform, StatusBar } from 'react-native';
 import firebase from 'firebase'
 import { AppLoading } from 'expo';
 import AppNavigator from '../../navigation/AppNavigator';
+import Colors from '../../constants/Colors';
 
 firebase.initializeApp({
   apiKey: "AIzaSyCTMBaq9RlIWvTBh1f0SrT9_c2dGpcxW0M",
@@ -30,7 +31,9 @@ export class OSAC extends Component {
     } else {
       return (
         <View style={styles.container}>
-          {Platform.OS === 'ios' && <StatusBar barStyle="default" />}
+          <StatusBar
+            barStyle="dark-content"
+          />
           <AppNavigator />
         </View>
       );

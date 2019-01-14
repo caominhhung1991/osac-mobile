@@ -1,46 +1,62 @@
 import React from 'react'
-import { Text, TouchableOpacity, Image, View } from 'react-native'
+import { Text, TouchableOpacity, Image, View } from 'react-native';
+import { Button as ButtonElement } from 'react-native-elements';
 import Colors from '../../../constants/Colors';
 
-const BLUE_COLOR = '#007aff';
 const OSAC_COLOR = Colors.osacColor;
 
 const Button = (props) => {
-  const { buttonStyle, textStyle } = styles;
-  const { children, onPress, style, icon, disabled } = props;
+  const {
+    children, containerViewStyle,
+    onPress, onLongPress,
+    icon, disabled,
+    outline,
+    buttonStyle, textStyle, colorStyle,
+    loading } = props;
   return (
-    <TouchableOpacity
-      onPress={!disabled ? onPress: () => {}}
-      style={[
-        buttonStyle, 
-        { ...style.buttonStyle }, 
-        disabled ? styles.disabledButtonStyle: null
-      ]}
-    >
-      <View style={styles.viewIconStyle}>
-        {icon ? <Image style={styles.iconStyle} source={icon} /> : null}
-      </View>
-      <Text style={[
-        textStyle, 
-        { ...style.textStyle },
-        disabled ? styles.disabledTextStyle: null
-        ]}>{children}</Text>
-    </TouchableOpacity>
+    <ButtonElement
+      containerViewStyle={[styles.containerViewStyle, containerViewStyle]}
+      icon={icon}
+      onPress={onPress}
+      onLongPress={onLongPress}
+      title={children}
+      buttonStyle={[outline ? styles.buttonOutlineStyle : styles.buttonStyle, buttonStyle]}
+      textStyle={[outline ? styles.titleOutlineStyle : styles.titleStyle, textStyle]}
+      loading={loading}
+      disabled={disabled}
+      disabledStyle={styles.disabledStyle}
+      disabledTextStyle={styles.disabledTextStyle}
+      Component={TouchableOpacity}
+      transparent
+      loading={loading}
+    />
   )
 }
 
 const styles = {
+  colorStyle: '#fff',
+  colorOutlineStyle: Colors.osacColor,
   buttonStyle: {
-    flex: 1,
-    position: 'relative',
-    alignSelf: 'stretch',
     backgroundColor: OSAC_COLOR,
     borderRadius: 5,
     borderWidth: 1,
     borderColor: OSAC_COLOR,
-    marginLeft: 5,
-    marginRight: 5,
   },
+  buttonOutlineStyle: {
+    backgroundColor: '#fff',
+    borderRadius: 5,
+    borderWidth: 1,
+    borderColor: OSAC_COLOR,
+  },
+  titleStyle: { color: '#fff' },
+  titleOutlineStyle: { color: Colors.osacColor },
+  disabledStyle: {
+    backgroundColor: '#fff',
+  },
+  disabledTextStyle: {
+  },
+
+
   viewIconStyle: {
     position: 'absolute',
     top: 2.5,
@@ -57,6 +73,9 @@ const styles = {
     fontWeight: '600',
     paddingTop: 10,
     paddingBottom: 10,
+  },
+  containerViewStyle: {
+    backgroundColor: '#ffffff10',
   },
   disabledButtonStyle: {
     backgroundColor: 'transparent',

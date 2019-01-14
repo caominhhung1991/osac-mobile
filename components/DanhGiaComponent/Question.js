@@ -28,9 +28,9 @@ class Question extends Component {
         <Text style={styles.questionTextStyle}>{question.title}</Text>
       </CardSection>,
       <CardSection key={question.title + 2} style={[styles.cardSectionStyle, { justifyContent: 'space-around', marginBottom: 5 }]}>
-        <TouchableOpacity onPress={() => onChangeDanhGia(question, SO_HAPPY)}>
-          <View style={question.danhgia === SO_HAPPY ? styles.choosedStyle : null}>
-            <Image style={[styles.faceIcons]} source={sohappy} />
+        <TouchableOpacity onPress={() => onChangeDanhGia(question, UN_HAPPY)}>
+          <View style={question.danhgia === UN_HAPPY ? styles.choosedStyle : null}>
+            <Image style={styles.faceIcons} source={unhappy} />
           </View>
         </TouchableOpacity>
 
@@ -40,9 +40,9 @@ class Question extends Component {
           </View>
         </TouchableOpacity>
 
-        <TouchableOpacity onPress={() => onChangeDanhGia(question, UN_HAPPY)}>
-          <View style={question.danhgia === UN_HAPPY ? styles.choosedStyle : null}>
-            <Image style={styles.faceIcons} source={unhappy} />
+        <TouchableOpacity onPress={() => onChangeDanhGia(question, SO_HAPPY)}>
+          <View style={question.danhgia === SO_HAPPY ? styles.choosedStyle : null}>
+            <Image style={[styles.faceIcons]} source={sohappy} />
           </View>
         </TouchableOpacity>
       </CardSection>

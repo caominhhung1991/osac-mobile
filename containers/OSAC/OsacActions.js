@@ -1,5 +1,4 @@
 import firebase from 'firebase';
-
 import {
   ON_CHANGE_VALUE,
   SET_LOADING_START,
@@ -11,8 +10,11 @@ import {
   ADD_DANHGIA_SUCCESS,
   ADD_DANHGIA_FAIL,
   SET_CAN_DANHGIA,
+  SET_MODAL_STATUS
 } from './OsacTypes';
 import { AsyncStorage } from 'react-native';
+import { NavigationActions } from 'react-navigation';
+import { checkAuth } from '../../services/OsacService';
 
 export const onChangeValue = (name, value) => {
   return {
@@ -34,31 +36,27 @@ export const setIsLoadingComplete = () => {
   }
 }
 
-export const loginUser = ({ email, password, navigation }) => {
+export const loginUser = ({ username, password, navigation }) => {
   return (dispatch) => {
-    firebase.auth().signInWithEmailAndPassword(email, password)
-      .then((user) => loginUserSuccess(dispatch, user, navigation))
-      .catch((err) => {
-        console.log(err)
-        loginUserFail(dispatch);
-        // firebase.auth().createUserWithEmailAndPassword(email, password)
-        //   .then(loginUserSuccess)
-        // .catch(this.onLoginFail)
-      })
+    // dispatch(NavigationActions.navigate('DanhGia'));
+    checkAuth({ username, password }).then(res => {
+      if (res) {
+        loginUserSuccess({ dispatch, username, navigation })
+      } else {
+        loginUserFail({ dispatch });
+      }
+    })
   }
 }
 
-const loginUserSuccess = (dispatch, user, navigation) => {
-  AsyncStorage.setItem('userToken', user.user.uid)
+const loginUserSuccess = ({ dispatch, navigation }) => {
   dispatch({
     type: LOGIN_USER_SUCCESS,
-    payload: { user }
-  })
-
+  });
   navigation.navigate('DanhGia');
 }
 
-const loginUserFail = (dispatch) => {
+const loginUserFail = ({ dispatch }) => {
   dispatch({
     type: LOGIN_USER_FAIL
   })
@@ -66,7 +64,6 @@ const loginUserFail = (dispatch) => {
 
 export const addDanhGia = (danhgia) => {
   const { currentUser } = firebase.auth();
-  console.log(danhgia)
   return (dispatch) => {
     firebase.database().ref(`/users/${currentUser.uid}/danhgias/${danhgia.danhgiaId}`)
       .set(danhgia)

@@ -27,8 +27,8 @@ export default class HomeScreen extends React.Component {
         <Text>Chuyển sang:</Text>
         {/* <Card> */}
           <CardSection>
-            <Button onPress={() => navigation.navigate('DanhGia')}>Đánh giá căn tin</Button>
-            <Button onPress={() => navigation.navigate('Settings')}>Tài khoản</Button>
+            {/* <Button onPress={() => navigation.navigate('DanhGia')}>Đánh giá căn tin</Button>
+            <Button onPress={() => navigation.navigate('Settings')}>Tài khoản</Button> */}
           </CardSection>
         {/* </Card> */}
       </View>

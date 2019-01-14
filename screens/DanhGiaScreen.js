@@ -1,92 +1,60 @@
 import React from 'react';
 import { connect } from 'react-redux';
+// import {  } from 'expo';
 import {
   NetInfo,
   ScrollView,
   View,
-  Image,
-  ImageBackground,
-  Text,
-  DatePickerIOS,
-  TouchableOpacity,
   TextInput,
   KeyboardAvoidingView,
-  Modal,
-  Alert,
-  Platform
+  Platform,
+  RefreshControl,
+  Alert
 } from 'react-native';
 import Colors from '../constants/Colors';
-import { danhgia } from '../assets/images';
-import danhgiaPNG from '../assets/images/danhgia.png'
 import { windowWidth } from '../constants/Layout';
-import { Button, Card, CardSection } from '../components/common';
+import { Button, CardSection, Card } from '../components/common';
 import Question from '../components/DanhGiaComponent/Question';
-import { addDanhGia, setCanDanhGia } from '../containers/OSAC/OsacActions';
+import { addDanhGia, setCanDanhGia, onChangeValue } from '../containers/OSAC/OsacActions';
+import { Card as _Card, Text } from 'react-native-elements';
+import ThongBao from '../components/ThongBaoCompent';
+import { INIT_QUESTIONS } from './../components/DanhGiaComponent';
+
+const INTERNET_MESSAGE = "Không có kết nối";
+const NGAY_CU_MESSAGE = "Vuốt màn hình xuống để lấy ngày mới";
+const GUI_SUCCESS = 'Gửi thành công!';
 
 class DanhGiaScreen extends React.Component {
-  static navigationOptions = ({ navigation }) => {
-    return {
-      // headerRight: (
-      //   <Button
-      //     onPress={this._setToday}
-      //     title='Today'
-      //     color={Colors.osacColor}
-      //   />
-      // ),
-      // headerLeft: (
-      //   <Button
-      //     onPress={() => navigation.navigate('Home')}
-      //     title='Thực Đơn'
-      //     color={Colors.osacColor}
-      //   />
-      // ),
-    }
-  }
-
   state = {
+    refreshing: false,
     isConnected: true,
     imageWidth: 0,
     imageHeight: 0,
+    // today: new Date('11/10/2011'),
     today: new Date(),
-    isFocus: false,
+    isFocus: true,
     modalVisible: false,
-    question1: {
-      id: 'question1',
-      title: 'Chất lượng bữa ăn?',
-      danhgia: 'happy',
-    },
-    question2: {
-      id: 'question2',
-      title: 'Khẩu vị bữa ăn?',
-      danhgia: 'happy',
-    },
-    question3: {
-      id: 'question3',
-      title: 'Vệ sinh an toàn thực phẩm?',
-      danhgia: 'happy',
-    },
-    question4: {
-      id: 'question4',
-      title: 'Thái độ phục vụ?',
-      danhgia: 'happy',
-    },
-    yKien: '',
+    ...INIT_QUESTIONS,
+
   }
 
-  componentDidMount() {
-    const { width, height } = Image.resolveAssetSource(danhgiaPNG)
-    const scaleFactor = width / windowWidth;
-    const imageHeight = height / scaleFactor;
-    this.setState({
-      imageWidth: windowWidth,
-      imageHeight: imageHeight,
-    })
-
-    NetInfo.isConnected.addEventListener('connectionChange', this.handleConnectivityChange)
+  componentWillMount() {
+    NetInfo.isConnected.addEventListener(
+      'connectionChange',
+      this.handleFirstConnectivityChange
+    );
   }
 
-  handleConnectivityChange = (isConnected) => {
+  handleFirstConnectivityChange = (isConnected) => {
     this.setState({ isConnected })
+
+  }
+
+  componentWillUnmount() {
+    NetInfo.isConnected.removeEventListener(
+      'connectionChange',
+      this.handleFirstConnectivityChange
+    );
   }
 
   showDate = () => {
@@ -94,63 +62,93 @@ class DanhGiaScreen extends React.Component {
     return `${today.getDate()}/${today.getMonth() + 1}/${today.getFullYear()}`
   }
 
-  showDatePickerAndroid = () => {
+  onSubmit = () => {
+    const { today } = this.state;
+    const { addDanhGia, setCanDanhGia, onChangeValue } = this.props;
+    const danhgia = {
+      danhgiaId: `${today.getDate()}${today.getMonth() + 1}${today.getFullYear()}`,
+      datetime: `${this.state.today}`,
+      question1: this.state.question1,
+      question2: this.state.question2,
+      question3: this.state.question3,
+      question4: this.state.question4,
+      yKien: this.state.yKien,
+    }
+
+    Alert.alert(
+      'Phiếu Đánh Giá Căn Tin',
+      `Xác nhận đánh giá ngày ${this.showDate()}`,
+      [{ text: 'Cancel', style: 'cancel' },
+      {
+        text: 'OK',
+        onPress: () => {
+          setCanDanhGia(true);
+          addDanhGia(danhgia);
+          setTimeout(() => {
+            onChangeValue('guiThanhCong', false);
+          }, 5000)
+        }
+      }],
+      { cancelable: true }
+    )
+  }
+
+  setModalVisible(visible) {
+    this.setState({ modalVisible: visible });
   }
 
   render() {
-    const { isDanhGia } = this.props;
     const { isConnected } = this.state;
+    const { isDanhGia, guiThanhCong } = this.props;
+    const keyboardVerticalOffset = Platform.OS === 'ios' ? 60 : 80;
+    const isOldDate = !this.compareDate(this.state.today, new Date());
+
     return (
-      <ScrollView style={styles.container} ref='scrollView'>
-        {/* <Modal animationType='slide' visible={this.state.modalVisible}
-          onRequestClose={() => { Alert.alert('Modal has been closed.'); }}
+      <View style={styles.container}>
+        <ThongBao
+          texts={[
+            isConnected ? '' : INTERNET_MESSAGE,
+            isOldDate ? NGAY_CU_MESSAGE : '',
+            guiThanhCong ? GUI_SUCCESS : '',
+          ]}
+          visible={guiThanhCong || isOldDate || !isConnected}
+        />
+        <ScrollView
+          style={styles.container}
+          refreshControl={this.renderRefreshControl()}
         >
-          <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', }}>
-            <DatePickerIOS
-              minimumDate={new Date('01/01/2018')}
-              maximumDate={new Date()}
-              mode='date'
-              style={{ width: 300 }}
-              date={this.state.today}
-              onDateChange={this._onDateChange} />
-            <CardSection>
-              <Button onPress={() => { this.setModalVisible(!this.state.modalVisible); }}>Chọn ngày</Button>
-              <Button onPress={this._setToday}>Reset hôm nay</Button>
-            </CardSection>
-          </View>
-        </Modal> */}
-
-        <ImageBackground
-          style={[styles.backgroundImage, { width: '100%', height: '100%' }]}
-          source={danhgia}
-        >
-          <Card style={styles.backgroundWhite}>
-            <CardSection style={{ padding: 0, backgroundColor: 'transparent' }}>
-              <Text style={styles.ngayStyle}>Ngày: </Text>
-              <View style={{ borderBottomWidth: 1, borderBottomColor: Colors.googleColor }}>
-                <TouchableOpacity onPress={() => this.setModalVisible(true)}>
-                  <Text style={styles.ngayValueStyle}>{this.showDate()}</Text>
-                </TouchableOpacity>
-              </View>
-              <Button style={styles.todayButtonStyle} onPress={this._setToday}>Hôm nay</Button>
-            </CardSection>
-          </Card>
-
-          <Card style={[styles.backgroundWhite, { marginTop: 10 }]}>
-            <Question question={this.state.question1} onChangeDanhGia={this.onChangeDanhGia} />
-            <Question question={this.state.question2} onChangeDanhGia={this.onChangeDanhGia} />
-            <Question question={this.state.question3} onChangeDanhGia={this.onChangeDanhGia} />
-            <Question question={this.state.question4} onChangeDanhGia={this.onChangeDanhGia} />
-
-            <KeyboardAvoidingView style={styles.container} keyboardVerticalOffset={150}
-              behavior='position' enabled={this.state.isFocus}
-              contentContainerStyle={this.state.isFocus ? { backgroundColor: '#fff' } : {}}
+          <KeyboardAvoidingView
+            style={{ flex: 1, alignItems: 'center' }}
+            keyboardVerticalOffset={keyboardVerticalOffset}
+            behavior='position' enabled={this.state.isFocus}
+            contentContainerStyle={this.state.isFocus ? { backgroundColor: '#fff' } : {}}
+          >
+            <_Card
+              flexDirection={"row"}
+              wrapperStyle={{
+                justifyContent: 'space-between',
+                alignItems: 'center', borderRadius: 10,
+                backgroundColor: 'rgba(255,255,255,0.87)'
+              }}
             >
+              <Text style={{ fontSize: 25, color: Colors.osacColor, marginRight: 10 }}>Ngày</Text>
+              <Text h4>{this.showDate()}</Text>
+              <Button
+                buttonStyle={{ flex: 1, alignItems: 'flex-end' }}
+                onPress={this.onSubmit}
+                disabled={isDanhGia || isOldDate}
+              >Gửi</Button>
+            </_Card>
+            <Card style={[styles.backgroundWhite, { marginTop: 10 }]}>
+              <Question question={this.state.question1} onChangeDanhGia={this.onChangeDanhGia} />
+              <Question question={this.state.question2} onChangeDanhGia={this.onChangeDanhGia} />
+              <Question question={this.state.question3} onChangeDanhGia={this.onChangeDanhGia} />
+              <Question question={this.state.question4} onChangeDanhGia={this.onChangeDanhGia} />
               <CardSection style={[styles.cardSectionStyle, { justifyContent: 'space-around' }]}>
                 <TextInput
                   style={styles.yKienStyle}
                   multiline numberOfLines={3}
-                  editable maxLength={500}
+                  maxLength={500}
                   placeholder='ý kiến của bạn để phục vụ tốt hơn'
                   autoCorrect={false}
                   onFocus={this._onFocus}
@@ -159,24 +157,35 @@ class DanhGiaScreen extends React.Component {
                   onChangeText={(yKien) => this.onChangeText({ yKien })}
                 />
               </CardSection>
-            </KeyboardAvoidingView>
-
-            <CardSection style={[styles.cardSectionStyle, { marginTop: 10 }]}>
-              <Button
-                onPress={this.onSubmit}
-                disabled={isDanhGia || !isConnected}
-              >Gửi</Button>
-              {/* <Button onPress={() => {}}>Sửa đánh giá</Button> */}
-            </CardSection>
-          </Card>
-        </ImageBackground>
-
-      </ScrollView>
+            </Card>
+          </KeyboardAvoidingView>
+        </ScrollView>
+      </View >
     );
   }
 
-  _showThucDon = () => {
-    this.props.navigation.navigate('Main');
+  renderRefreshControl = () => {
+    return <RefreshControl
+      refreshing={this.state.refreshing}
+      onRefresh={this._onRefresh}
+    />
+  }
+  _onRefresh = () => {
+    const { today } = this.state;
+    this.setState({ refreshing: true });
+    setTimeout(() => {
+      if (this.compareDate(today, new Date())) {
+        this.setState({
+          refreshing: false,
+        });
+      } else {
+        this.setState({
+          today: new Date(),
+          refreshing: false,
+          ...INIT_QUESTIONS,
+        });
+      }
+    }, 1500)
   }
 
   _setToday = () => {
@@ -202,13 +211,6 @@ class DanhGiaScreen extends React.Component {
     this.setState({
       isFocus: false
     })
-    // this.refs.scrollView.scrollTo({x: 0, y: 0});
-  }
-
-  setModalVisible(visible) {
-    if (Platform.OS === 'ios') {
-      // this.setState({ modalVisible: visible });
-    }
   }
 
   onChangeDanhGia = (question, danhgia) => {
@@ -228,32 +230,16 @@ class DanhGiaScreen extends React.Component {
     })
   }
 
-  onSubmit = () => {
-    const { today } = this.state;
-    const { addDanhGia, setCanDanhGia } = this.props;
-    const danhgia = {
-      danhgiaId: `${today.getDate()}${today.getMonth() + 1}${today.getFullYear()}`,
-      datetime: `${this.state.today}`,
-      question1: this.state.question1,
-      question2: this.state.question2,
-      question3: this.state.question3,
-      question4: this.state.question4,
-      yKien: this.state.yKien,
-    }
-    setCanDanhGia(true);
-    addDanhGia(danhgia);
+  compareDate = (oldDate, today) => {
+    const OldDay = `${oldDate.getDate()}/${oldDate.getMonth() + 1}/${oldDate.getFullYear()}`;
+    const Today = `${today.getDate()}/${today.getMonth() + 1}/${today.getFullYear()}`;
+    return OldDay === Today;
   }
 }
 
 const styles = {
   container: {
     flex: 1,
-    backgroundColor: '#F2F2F2',
-  },
-  backgroundImage: {
-    flex: 1,
-    alignItems: 'center',
-    zIndex: 2,
   },
   backgroundWhite: {
     width: windowWidth * 0.90,
@@ -302,8 +288,8 @@ const styles = {
 };
 
 mapStateToProps = state => {
-  const { isDanhGia } = state.osac;
-  return { isDanhGia };
+  const { isDanhGia, guiThanhCong } = state.osac;
+  return { isDanhGia, guiThanhCong };
 }
 
-export default connect(mapStateToProps, { addDanhGia, setCanDanhGia })(DanhGiaScreen);
+export default connect(mapStateToProps, { addDanhGia, setCanDanhGia, onChangeValue })(DanhGiaScreen);

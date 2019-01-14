@@ -11,13 +11,14 @@ import {
 } from './OsacTypes'
 
 const initState = {
-  email: 'hung@gmail.com',
-  password: 'Hung1991',
+  username: '',
+  password: '',
   loggedIn: null,
   userToken: null,
   isLoadingComplete: false,
   isDanhGia: false,
   danhGiaDate: '',
+  guiThanhCong: false,
 }
 
 export default (state = initState, action) => {
@@ -33,7 +34,7 @@ export default (state = initState, action) => {
     case LOG_OUT:
       return { ...state, password: '' };
     case ADD_DANHGIA_SUCCESS:
-      return { ...state, isDanhGia: true };
+      return { ...state, isDanhGia: true, guiThanhCong: true };
     case ADD_DANHGIA_FAIL:
       return { ...state, isDanhGia: false  };
     case SET_CAN_DANHGIA:

@@ -19,6 +19,7 @@ const Input = (props) => {
         value={value}
         onChangeText={onChangeText}
         style={inputStyle}
+        autoCapitalize='none'
       />
       <Text style={bottomLineStyle}></Text>
     </View>
